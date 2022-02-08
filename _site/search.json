@@ -2,11 +2,11 @@
   "articles": [
     {
       "path": "about.html",
-      "title": "About this blog",
+      "title": "Sobre o blog",
       "description": "Some additional details about the blog",
       "author": [],
       "contents": "\r\n\r\n\r\n\r\n",
-      "last_modified": "2022-02-08T19:19:23-03:00"
+      "last_modified": "2022-02-08T19:37:19-03:00"
     },
     {
       "path": "index.html",
