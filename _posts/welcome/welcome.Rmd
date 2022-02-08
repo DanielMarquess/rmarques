@@ -1,10 +1,9 @@
 ---
-title: "Welcome to rdatamarques"
+title: "Boas-vindas"
 description: |
-  Welcome to our new blog, rdatamarques. We hope you enjoy 
-  reading what we have to say!
+  Bem-vindo ao meu blog. Sou enfermeiro epidemiologista e cientista de dados em formação (MBA em Data Science e Analytics na USP/ESALQ). Nele publicarei meus projetos na área de Data Science!
 author:
-  - name: Nora Jones 
+  - name: Daniel Marques 
     url: https://example.com/norajones
     affiliation: Spacely Sprockets
     affiliation_url: https://example.com/spacelysprokets
