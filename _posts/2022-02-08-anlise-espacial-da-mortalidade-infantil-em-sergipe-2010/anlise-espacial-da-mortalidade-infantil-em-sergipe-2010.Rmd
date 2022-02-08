@@ -1,10 +1,10 @@
 ---
-title: "Análise Espacial da Mortalidade Infantil em Sergipe, 2010"
+title: "Análise espacial da mortalidade infantil em Sergipe, 2010 (post em construção)"
 description: |
-  A short description of the post.
+ Objetivo: demonstrar os passos necessários para analisar espacialmente dados de mortalidade infantil 
 author:
-  - name: Nora Jones
-    url: https://example.com/norajones
+  - name: Daniel Marques
+    url: https://rdatamarques.netlify.app/
 date: 2022-02-08
 output:
   distill::distill_article:
@@ -16,8 +16,214 @@ output:
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
-Distill is a publication format for scientific and technical writing, native to the web.
+<style>
+body {
+text-align: justify}
+</style>
 
-Learn more about using Distill at <https://rstudio.github.io/distill>.
+### Carregamento de Pacotes
+
+```{r echo=TRUE, results=FALSE, warning=FALSE}
+#pacman -> utilizar função p_load (instala e carrega o pacote)
+#rio -> importar dados
+#here -> facilitar localização de arquivos
+#janitor -> função janitor para padronizar nomes das colunas
+#viridis -> utilizar cores que possam ser bem distinguidas 
+#pelos daltônicos
+#tidyverse -> manipulação de dados
+#ggspatial -> inserir a seta para o norte no mapa
+#sf -> ler arquivos do tipo shapefile e transformá-los em simple feature
+#plotly -> criação de gráficos interativos
+#spdep -> utilizar funções poly2nb, nb2mat, mat2listw
+#RColorBrewer -> utilização de paleta de cores
+
+library(pacman)
+p_load(rio, here, janitor, viridis, tidyverse, viridis,
+       ggspatial, sf, plotly, spdep, gtools, 
+       RColorBrewer, rayshader)
+# O pacote rayshader que está no CRAN, no momento, possui alguns bugs. A versão
+# que está no GitHub do autor do pacote já é mais funcional. Para instalá-la:
+# devtools::install_github("tylermorganwall/rayshader")
+```
+
+### Importação de dados e limpeza
+
+```{r, echo=TRUE, results=FALSE}
+# Importar dados sobre mortalidade infantil do IPEA
+dados_ipea <- import("C:/DataScienceUSP/Analise_espacial/Projeto/SE_IPEA.xlsx", which = "IDH_2010")
+
+# Limpar os nomes das colunas, padronizando
+dados_ipea <- janitor::clean_names(dados_ipea)
+
+# Selecionar apenas as colunas necessárias
+dados_mort_inf <- dados_ipea %>% dplyr::select(codigo_do_municipio,
+                                          municipio,
+                                          mortalidade_infantil)
+
+# Ler o arquivo shapefile dos municípios de Sergipe,
+# transformando em simple feature
+sf_sergipe <- st_read("C:/DataScienceUSP/Analise_espacial/Projeto/SE_Municipios_2020.shp")
+
+# Selecionar os 6 primeiros números do código do IBGE no 
+# simple feature, para que possamos realizar o left_join 
+# com a base de dados
+sf_sergipe$CD_MUN <- substring(sf_sergipe$CD_MUN, 1, 6)
+
+# Renomear a coluna codigo_do_municipio dos dados do IPEA
+# para CD_MUN, facilitando assim a união com o sf_sergipe
+dados_ipea <- dados_ipea %>%
+  rename(CD_MUN = codigo_do_municipio)
+
+# Transformar o tipo de dado CD_MUN de numérico para character
+# Com isso, garantimos o left_join com sucesso
+dados_ipea$CD_MUN <- as.character(dados_ipea$CD_MUN)
+
+sf_sergipe_ipea <-left_join(sf_sergipe, dados_ipea, 
+                            by = "CD_MUN")
+```
+
+### Gráfico em ggplot, demonstrando as regiões com maiores taxas de mortalidade infantil
+
+```{r, echo=TRUE, results=FALSE}
+gg_mort_inf <- ggplot(data = sf_sergipe_ipea, 
+                    aes(label = municipio)) + 
+  geom_sf(aes(fill = mortalidade_infantil)) + 
+  scale_fill_viridis("Mortes por 1000 nascidos vivos") +
+  ggtitle("Taxa de Mortalidade Infantil em Sergipe, 2010") +
+  theme_bw() +
+  annotation_north_arrow(width = unit(0.75, "cm"),
+                         height = unit(1.0, "cm"))
+
+# Exibição do gráfico em ggplot
+gg_mort_inf
+```
+
+### Preparação dos dados para análise da autocorrelação global
+
+```{r, echo=TRUE, results=FALSE}
+# Estabelecendo vizinhanças por contiguidade, critério queen:
+vizinhos_queen <- poly2nb(pl = sf_sergipe,
+            queen = TRUE,
+            row.names = sf_sergipe$NM_MUN)
+
+# Estabelecendo a matriz de vizinhança, binária
+matrizW_queen <- nb2mat(vizinhos_queen,
+       style = "B")
+
+# Renomeando linhas e colunas da matriz 
+rownames(matrizW_queen) <- sf_sergipe$NM_MUN
+colnames(matrizW_queen) <- sf_sergipe$NM_MUN
+
+# Transformando a matriz em um objeto do tipo listw para
+# realização do teste de autocorrelação global (I de Moran)
+listW_queen <- mat2listw(matrizW_queen)
+
+moran.test(x = sf_sergipe_ipea$mortalidade_infantil, 
+           listw = listW_queen)
+
+# Constatando a existência de aglomerados espaciais
+# I de Moran = 0.28643100
+
+# Criando o diagrama de espalhamento de Moran
+# O lag.listw serve para calcular a variável 
+# defasada espacialmente 
+w_mort <- lag.listw(listW_queen, sf_sergipe_ipea$mortalidade_infantil)
+
+# Realizando o escore Z para geração do diagrama de espalhamento
+# de Moran
+w_mort_sca <- scale(w_mort)
+mort_inf_sca <- scale(sf_sergipe_ipea$mortalidade_infantil)
+
+# Criando o diagrama de espalhamento de Moran
+moran_diag_mort_sca <- sf_sergipe_ipea %>%
+  ggplot(aes(label = NM_MUN)) +
+  geom_point(aes(x = mort_inf_sca, y = w_mort_sca),alpha=0.6, size=3) +
+  geom_smooth(aes(x = mort_inf_sca, y = w_mort_sca), method = "lm", se=FALSE) +
+  geom_vline(xintercept = mean(mort_inf_sca), lty = "dashed") +
+  geom_hline(yintercept = mean(w_mort_sca), lty = "dashed") +
+  annotate('text', x = -1.8, y = 2.5, label= 'Low-High') +
+  annotate('text', x = 1.8, y = 2.5, label= 'High-High') +
+  annotate('text', x = -1.8, y = -2, label= 'Low-Low') +
+  annotate('text', x = 1.8, y = -2, label= 'High-Low') +
+  xlab("Taxa de mortalidade infantil (observação de referência)") +
+  ylab("Taxa de mortalidade infantil defasada espacialmente") +
+  ggtitle("Diagrama de espalhamento de Moran") +
+  theme_bw()
+
+moran_diag_mort_sca
+```
+
+### Preparação dos dados para análise da autocorrelação local
+
+```{r, echo=TRUE, results=FALSE}
+
+# Seguindo o proposto por Anselin (1995), devemos 
+# padronizar em linha nossa matriz de pesos espaciais W:
+matrizW_queen_linha <- nb2mat(vizinhos_queen,
+                        style = "W")
+
+listW_queen_linha <- mat2listw(matrizW_queen_linha)
+
+# Calculando a autocorrelação local
+moran_local_mort <- localmoran(x = sf_sergipe_ipea$mortalidade_infantil, 
+           listw = listW_queen_linha)
+
+# Unindo o resultado do teste ao simple feature
+sf_sergipe_ipea_moran_local_mort <- cbind(sf_sergipe_ipea, 
+                                     moran_local_mort)
+
+# Criando um objeto que reservará espaços para 
+# conter, no futuro, os quadrantes AA, AB, BA e BB:
+quadrantes <- vector(mode = "numeric", length = nrow(moran_local_mort))
+
+# Criando um vetor que contenha o centro das observações da variável idh ao 
+# redor de sua média:
+centro_mort_inf <- sf_sergipe_ipea$mortalidade_infantil - 
+  mean(sf_sergipe_ipea$mortalidade_infantil)
+
+# Criando um vetor que contenha o centro dos valores da Estatística Moran Local 
+# em torno de sua média:
+centro_moran_local_mort <- moran_local_mort[,1] - mean(moran_local_mort[,1])
+
+# Criando um objeto que guarde a significância a ser adotada:
+sig <- 0.05
+
+# Enquadrando nossas observações em seus respectivos quadrantes:
+quadrantes[centro_mort_inf > 0 & centro_moran_local_mort > 0] <- "HH"
+quadrantes[centro_mort_inf > 0 & centro_moran_local_mort < 0] <- "HL"
+quadrantes[centro_mort_inf < 0 & centro_moran_local_mort > 0] <- "LH"
+quadrantes[centro_mort_inf < 0 & centro_moran_local_mort < 0] <- "LL"
+
+# Ajustando a presença da observação em razão de sua significância estatística:
+quadrantes[moran_local_mort[,5] > sig] <- "Estatisticamente_não_significante"
+
+# Juntando o objeto quadrantes ao objeto 
+# sf_sergipe_ipea_moran_local_mort
+sf_sergipe_ipea_moran_local_mort["quadrantes"] <- factor(quadrantes)
+```
+
+### Geração do mapa de autocorrelação local
+
+```{r}
+gg_mort_inf_quad <- ggplot(sf_sergipe_ipea_moran_local_mort, 
+       aes(label = municipio)) + 
+  geom_sf(aes(fill = quadrantes)) + 
+  scale_fill_manual(values = c("#ffffff", "#daf25e", "#10e855",
+                               "#000fb3")) +
+  ggtitle("Moran local - Mortalidade Infantil em Sergipe, 2010") +
+  theme_bw() +
+  annotation_north_arrow(width = unit(0.75, "cm"),
+                         height = unit(1.0, "cm"))
+
+# Exibição do mapa de autocorrelação local
+gg_mort_inf_quad
+```
+
+
+***
+
+> Como resultado, observa-se que há aglomerados espaciais em Sergipe, municípios com altas taxas de mortalidade infantil, cercado de vizinhos com altas taxas (High-High), a exemplo de Santana de São Francisco, Pacatuba e Neópolis. Logo, medidas prioritárias devem ser adotadas para redução da mortalidade infantil nessa área. 
+Além disso, há municípios com baixas taxas cercados de vizinhos com altas taxas, como Aracaju, Nossa Senhora do Socorro e São Cristóvão, demonstrando grande disparidade da mortalidade infantil, mesmo tão próximos geograficamente. Refletindo sobre essa proximidade, poderia se pensar em levar as boas práticas de uma região para outra, assim como algum tipo de auxílio financeiro que ajudasse no tratamento dessa realidade.
+
 
 
