@@ -3,7 +3,11 @@ title: "Sobre o blog"
 description: |
   Some additional details about the blog
 ---
-
+<style>
+body {
+text-align: justify}
+</style>
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 ```
+Olá! Sou Daniel Marques, enfermeiro com residência em epidemiologia hospitalar pela Universidade Federal de Sergipe, epidemiologista de campo pela Fiocruz (Brasília) e cientista de dados em formação na USP/ESALQ. Pretendo através desse blog consolidar os conhecimentos aprendidos na pós-graduação em ciência de dados, por meio de aplicações práticas envolvendo a área da saúde, e, sempre que possível, a epidemiologia, dada a minha formação. Ao mesmo tempo, espero contribuir em conhecimento com você, leitor, interessado nesse ramo tão gratificante que é a Ciência de Dados.
