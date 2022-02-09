@@ -1,5 +1,5 @@
 ---
-title: "Análise espacial da mortalidade infantil em Sergipe, 2010 (post em construção)"
+title: "Como realizar a análise espacial da mortalidade infantil"
 description: |
  Objetivo: demonstrar os passos necessários para analisar espacialmente dados de mortalidade infantil 
 author:
@@ -222,8 +222,8 @@ gg_mort_inf_quad
 
 ***
 
-> Como resultado, observa-se que há aglomerados espaciais em Sergipe, municípios com altas taxas de mortalidade infantil, cercado de vizinhos com altas taxas (High-High), a exemplo de Santana de São Francisco, Pacatuba e Neópolis. Logo, medidas prioritárias devem ser adotadas para redução da mortalidade infantil nessa área. 
-Além disso, há municípios com baixas taxas cercados de vizinhos com altas taxas, como Aracaju, Nossa Senhora do Socorro e São Cristóvão, demonstrando grande disparidade da mortalidade infantil, mesmo tão próximos geograficamente. Refletindo sobre essa proximidade, poderia se pensar em levar as boas práticas de uma região para outra, assim como algum tipo de auxílio financeiro que ajudasse no tratamento dessa realidade.
+<span style="color: white">AAAA</span> Como resultado, observa-se que há aglomerados espaciais em Sergipe, municípios com altas taxas de mortalidade infantil, cercado de vizinhos com altas taxas (High-High), a exemplo de Santana de São Francisco, Pacatuba e Neópolis. Logo, medidas prioritárias devem ser adotadas para redução da mortalidade infantil nessa área.<br>
+<span style="color: white">AAAA</span> Além disso, há municípios com baixas taxas cercados de vizinhos com altas taxas, como Aracaju, Nossa Senhora do Socorro e São Cristóvão, demonstrando grande disparidade da mortalidade infantil, mesmo tão próximos geograficamente. Refletindo sobre essa proximidade, poderia se pensar em levar as boas práticas de uma região para outra, assim como algum tipo de auxílio financeiro que ajudasse no tratamento dessa realidade.
 
 
 
