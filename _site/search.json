@@ -9,10 +9,10 @@
     },
     {
       "path": "index.html",
-      "title": "rdatamarques",
+      "title": "Posts",
       "author": [],
       "contents": "\r\n\r\n\r\n\r\n",
-      "last_modified": "2022-02-08T19:50:06-03:00"
+      "last_modified": "2022-02-08T21:12:40-03:00"
     }
   ],
   "collections": ["posts/posts.json"]
