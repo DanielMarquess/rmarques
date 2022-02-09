@@ -1489,18 +1489,16 @@ text-align: justify}
 <h3 id="carregamento-de-pacotes">Carregamento de Pacotes</h3>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='co'>#pacman -&gt; utilizar função p_load (instala e carrega o pacote)</span>
-<span class='co'>#rio -&gt; importar dados</span>
-<span class='co'>#here -&gt; facilitar localização de arquivos</span>
-<span class='co'>#janitor -&gt; função janitor para padronizar nomes das colunas</span>
-<span class='co'>#viridis -&gt; utilizar cores que possam ser bem distinguidas </span>
-<span class='co'>#pelos daltônicos</span>
-<span class='co'>#tidyverse -&gt; manipulação de dados</span>
-<span class='co'>#ggspatial -&gt; inserir a seta para o norte no mapa</span>
-<span class='co'>#sf -&gt; ler arquivos do tipo shapefile e transformá-los em simple feature</span>
-<span class='co'>#plotly -&gt; criação de gráficos interativos</span>
-<span class='co'>#spdep -&gt; utilizar funções poly2nb, nb2mat, mat2listw</span>
-<span class='co'>#RColorBrewer -&gt; utilização de paleta de cores</span>
+<pre class="sourceCode r"><code class="sourceCode r"><span class='co'># pacman -&gt; utilizar função p_load (instala e carrega o pacote)</span>
+<span class='co'># rio -&gt; importar dados</span>
+<span class='co'># janitor -&gt; função janitor para padronizar nomes das colunas</span>
+<span class='co'># viridis -&gt; utilizar cores que possam ser bem distinguidas </span>
+<span class='co'># por pessoas daltônicas</span>
+<span class='co'># tidyverse -&gt; manipulação de dados</span>
+<span class='co'># ggspatial -&gt; inserir a seta para o norte no mapa</span>
+<span class='co'># sf -&gt; ler arquivos do tipo shapefile e transformá-los em    simple feature</span>
+<span class='co'># spdep -&gt; utilizar funções poly2nb, nb2mat, mat2listw</span>
+<span class='co'># RColorBrewer -&gt; utilização de paleta de cores</span>
 
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/trinker/pacman'>pacman</a></span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/pkg/pacman/man/p_load.html'>p_load</a></span><span class='op'>(</span><span class='va'>rio</span>, <span class='va'>here</span>, <span class='va'>janitor</span>, <span class='va'>viridis</span>, <span class='va'>tidyverse</span>, <span class='va'>viridis</span>,
@@ -1515,7 +1513,8 @@ text-align: justify}
 <h3 id="importação-de-dados-e-limpeza">Importação de dados e limpeza</h3>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='co'># Importar dados sobre mortalidade infantil do IPEA</span>
+<pre class="sourceCode r"><code class="sourceCode r"><span class='co'># Importar dados sobre mortalidade infantil do Instituto</span>
+<span class='co'># de Pesquisa Econômica Aplicada (IPEA)</span>
 <span class='va'>dados_ipea</span> <span class='op'>&lt;-</span> <span class='fu'>import</span><span class='op'>(</span><span class='st'>"C:/DataScienceUSP/Analise_espacial/Projeto/SE_IPEA.xlsx"</span>, which <span class='op'>=</span> <span class='st'>"IDH_2010"</span><span class='op'>)</span>
 
 <span class='co'># Limpar os nomes das colunas, padronizando</span>
@@ -1527,7 +1526,8 @@ text-align: justify}
                                           <span class='va'>mortalidade_infantil</span><span class='op'>)</span>
 
 <span class='co'># Ler o arquivo shapefile dos municípios de Sergipe,</span>
-<span class='co'># transformando em simple feature</span>
+<span class='co'># transformando em simple feature (fonte: Instituto Brasileiro</span>
+<span class='co'># de Geografia e Estatística - IBGE)</span>
 <span class='va'>sf_sergipe</span> <span class='op'>&lt;-</span> <span class='fu'>st_read</span><span class='op'>(</span><span class='st'>"C:/DataScienceUSP/Analise_espacial/Projeto/SE_Municipios_2020.shp"</span><span class='op'>)</span>
 
 <span class='co'># Selecionar os 6 primeiros números do código do IBGE no </span>
@@ -1591,15 +1591,14 @@ text-align: justify}
            listw <span class='op'>=</span> <span class='va'>listW_queen</span><span class='op'>)</span>
 
 <span class='co'># Constatando a existência de aglomerados espaciais</span>
-<span class='co'># I de Moran = 0.28643100</span>
+<span class='co'># I de Moran = 0.28643100,  p-value = 5.166e-06</span>
 
 <span class='co'># Criando o diagrama de espalhamento de Moran</span>
 <span class='co'># O lag.listw serve para calcular a variável </span>
 <span class='co'># defasada espacialmente </span>
 <span class='va'>w_mort</span> <span class='op'>&lt;-</span> <span class='fu'>lag.listw</span><span class='op'>(</span><span class='va'>listW_queen</span>, <span class='va'>sf_sergipe_ipea</span><span class='op'>$</span><span class='va'>mortalidade_infantil</span><span class='op'>)</span>
 
-<span class='co'># Realizando o escore Z para geração do diagrama de espalhamento</span>
-<span class='co'># de Moran</span>
+<span class='co'># Realizando o escore Z para geração do diagrama de espalhamento de Moran</span>
 <span class='va'>w_mort_sca</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/scale.html'>scale</a></span><span class='op'>(</span><span class='va'>w_mort</span><span class='op'>)</span>
 <span class='va'>mort_inf_sca</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/scale.html'>scale</a></span><span class='op'>(</span><span class='va'>sf_sergipe_ipea</span><span class='op'>$</span><span class='va'>mortalidade_infantil</span><span class='op'>)</span>
 
@@ -1646,8 +1645,7 @@ text-align: justify}
 <span class='co'># conter, no futuro, os quadrantes AA, AB, BA e BB:</span>
 <span class='va'>quadrantes</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/vector.html'>vector</a></span><span class='op'>(</span>mode <span class='op'>=</span> <span class='st'>"numeric"</span>, length <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>nrow</a></span><span class='op'>(</span><span class='va'>moran_local_mort</span><span class='op'>)</span><span class='op'>)</span>
 
-<span class='co'># Criando um vetor que contenha o centro das observações da variável idh ao </span>
-<span class='co'># redor de sua média:</span>
+<span class='co'># Criando um vetor que contenha o centro das observações da variável mortalidade infantil ao redor de sua média:</span>
 <span class='va'>centro_mort_inf</span> <span class='op'>&lt;-</span> <span class='va'>sf_sergipe_ipea</span><span class='op'>$</span><span class='va'>mortalidade_infantil</span> <span class='op'>-</span> 
   <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>sf_sergipe_ipea</span><span class='op'>$</span><span class='va'>mortalidade_infantil</span><span class='op'>)</span>
 

@@ -24,18 +24,16 @@ text-align: justify}
 ### Carregamento de Pacotes
 
 ```{r echo=TRUE, results=FALSE, warning=FALSE}
-#pacman -> utilizar função p_load (instala e carrega o pacote)
-#rio -> importar dados
-#here -> facilitar localização de arquivos
-#janitor -> função janitor para padronizar nomes das colunas
-#viridis -> utilizar cores que possam ser bem distinguidas 
-#pelos daltônicos
-#tidyverse -> manipulação de dados
-#ggspatial -> inserir a seta para o norte no mapa
-#sf -> ler arquivos do tipo shapefile e transformá-los em simple feature
-#plotly -> criação de gráficos interativos
-#spdep -> utilizar funções poly2nb, nb2mat, mat2listw
-#RColorBrewer -> utilização de paleta de cores
+# pacman -> utilizar função p_load (instala e carrega o pacote)
+# rio -> importar dados
+# janitor -> função janitor para padronizar nomes das colunas
+# viridis -> utilizar cores que possam ser bem distinguidas 
+# por pessoas daltônicas
+# tidyverse -> manipulação de dados
+# ggspatial -> inserir a seta para o norte no mapa
+# sf -> ler arquivos do tipo shapefile e transformá-los em    simple feature
+# spdep -> utilizar funções poly2nb, nb2mat, mat2listw
+# RColorBrewer -> utilização de paleta de cores
 
 library(pacman)
 p_load(rio, here, janitor, viridis, tidyverse, viridis,
@@ -49,7 +47,8 @@ p_load(rio, here, janitor, viridis, tidyverse, viridis,
 ### Importação de dados e limpeza
 
 ```{r, echo=TRUE, results=FALSE}
-# Importar dados sobre mortalidade infantil do IPEA
+# Importar dados sobre mortalidade infantil do Instituto
+# de Pesquisa Econômica Aplicada (IPEA)
 dados_ipea <- import("C:/DataScienceUSP/Analise_espacial/Projeto/SE_IPEA.xlsx", which = "IDH_2010")
 
 # Limpar os nomes das colunas, padronizando
@@ -61,7 +60,8 @@ dados_mort_inf <- dados_ipea %>% dplyr::select(codigo_do_municipio,
                                           mortalidade_infantil)
 
 # Ler o arquivo shapefile dos municípios de Sergipe,
-# transformando em simple feature
+# transformando em simple feature (fonte: Instituto Brasileiro
+# de Geografia e Estatística - IBGE)
 sf_sergipe <- st_read("C:/DataScienceUSP/Analise_espacial/Projeto/SE_Municipios_2020.shp")
 
 # Selecionar os 6 primeiros números do código do IBGE no 
@@ -96,6 +96,7 @@ gg_mort_inf <- ggplot(data = sf_sergipe_ipea,
 
 # Exibição do gráfico em ggplot
 gg_mort_inf
+
 ```
 
 ### Preparação dos dados para análise da autocorrelação global
@@ -122,15 +123,14 @@ moran.test(x = sf_sergipe_ipea$mortalidade_infantil,
            listw = listW_queen)
 
 # Constatando a existência de aglomerados espaciais
-# I de Moran = 0.28643100
+# I de Moran = 0.28643100,  p-value = 5.166e-06
 
 # Criando o diagrama de espalhamento de Moran
 # O lag.listw serve para calcular a variável 
 # defasada espacialmente 
 w_mort <- lag.listw(listW_queen, sf_sergipe_ipea$mortalidade_infantil)
 
-# Realizando o escore Z para geração do diagrama de espalhamento
-# de Moran
+# Realizando o escore Z para geração do diagrama de espalhamento de Moran
 w_mort_sca <- scale(w_mort)
 mort_inf_sca <- scale(sf_sergipe_ipea$mortalidade_infantil)
 
@@ -176,8 +176,7 @@ sf_sergipe_ipea_moran_local_mort <- cbind(sf_sergipe_ipea,
 # conter, no futuro, os quadrantes AA, AB, BA e BB:
 quadrantes <- vector(mode = "numeric", length = nrow(moran_local_mort))
 
-# Criando um vetor que contenha o centro das observações da variável idh ao 
-# redor de sua média:
+# Criando um vetor que contenha o centro das observações da variável mortalidade infantil ao redor de sua média:
 centro_mort_inf <- sf_sergipe_ipea$mortalidade_infantil - 
   mean(sf_sergipe_ipea$mortalidade_infantil)
 
